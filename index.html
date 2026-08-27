@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="refresh" content="60">
 <title>Today's Session</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -614,6 +613,31 @@ document.getElementById("app").addEventListener("click", e=>{
     render(cur, `[data-d="${d.dataset.d}"]`);
   }
 });
+
+// Roll the day over at midnight WITHOUT stealing your place.
+// This page used to carry <meta http-equiv="refresh" content="60">, which
+// reloaded the document every minute and reset the view to the current day —
+// so any day you navigated to on the remote lasted at most 60 seconds.
+// Now: if the screen is showing today, it advances on its own overnight. If
+// you have deliberately moved to another day, it stays there until you press
+// TODAY (or Home on the remote). Nothing else re-renders on a timer.
+function focusSel(){
+  const el = document.activeElement;
+  if(!el || !el.dataset) return null;
+  if(el.dataset.d) return `[data-d="${el.dataset.d}"]`;
+  if(el.dataset.p) return `[data-p="${el.dataset.p}"]`;
+  return null;
+}
+
+let renderedDate = new Date().toDateString();
+
+setInterval(()=>{
+  const now = new Date();
+  if(now.toDateString() === renderedDate) return;   // still the same calendar day
+  renderedDate = now.toDateString();
+  if(cur !== now.getDay()) return;                  // parked on another day — leave it alone
+  render(cur, focusSel());                          // on today: advance to the new day
+}, 30000);
 </script>
 </body>
 </html>
