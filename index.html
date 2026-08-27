@@ -503,7 +503,10 @@ function weekInfo(){
   // roll today back to its Monday
   const dow = (b.getDay() + 6) % 7;
   b.setDate(b.getDate() - dow);
-  const weeks = Math.floor((b - a) / 604800000);
+  // a and b are both local-midnight Mondays, so their difference is an exact
+  // number of weeks plus or minus one hour of DST skew — round, never floor,
+  // or the counter reads a week low from a spring-forward until fall-back.
+  const weeks = Math.round((b - a) / 604800000);
   const n = weeks + 1;
   return { n: n, deload: n > 0 && n % 4 === 0 };
 }
@@ -592,11 +595,11 @@ render(cur);
 // Remote d-pad: left/right = day, up/down = person, Home = back to today
 document.addEventListener("keydown", e=>{
   const n = PEOPLE.length;
-  if(e.key==="ArrowRight"){ cur=(cur+1)%7; render(cur); }
-  else if(e.key==="ArrowLeft"){ cur=(cur+6)%7; render(cur); }
-  else if(e.key==="ArrowDown" && n>1){ curPerson=(curPerson+1)%n; render(cur); }
-  else if(e.key==="ArrowUp" && n>1){ curPerson=(curPerson+n-1)%n; render(cur); }
-  else if(e.key==="Home"){ cur=new Date().getDay(); curPerson=0; render(cur); }
+  if(e.key==="ArrowRight"){ cur=(cur+1)%7; render(cur, focusSel()); }
+  else if(e.key==="ArrowLeft"){ cur=(cur+6)%7; render(cur, focusSel()); }
+  else if(e.key==="ArrowDown" && n>1){ curPerson=(curPerson+1)%n; render(cur, focusSel()); }
+  else if(e.key==="ArrowUp" && n>1){ curPerson=(curPerson+n-1)%n; render(cur, focusSel()); }
+  else if(e.key==="Home"){ cur=new Date().getDay(); curPerson=0; render(cur, focusSel()); }
   else return;
   e.preventDefault();
 });
@@ -619,8 +622,9 @@ document.getElementById("app").addEventListener("click", e=>{
 // reloaded the document every minute and reset the view to the current day —
 // so any day you navigated to on the remote lasted at most 60 seconds.
 // Now: if the screen is showing today, it advances on its own overnight. If
-// you have deliberately moved to another day, it stays there until you press
-// TODAY (or Home on the remote). Nothing else re-renders on a timer.
+// you have deliberately moved to another day, that day stays on screen until
+// you press TODAY (or Home on the remote) — the overnight tick only refreshes
+// the date stamp and week badge around it. Nothing else runs on a timer.
 function focusSel(){
   const el = document.activeElement;
   if(!el || !el.dataset) return null;
@@ -635,8 +639,10 @@ setInterval(()=>{
   const now = new Date();
   if(now.toDateString() === renderedDate) return;   // still the same calendar day
   renderedDate = now.toDateString();
-  if(cur !== now.getDay()) return;                  // parked on another day — leave it alone
-  render(cur, focusSel());                          // on today: advance to the new day
+  // Re-render in place: refreshes the TODAY stamp and the week/deload badge.
+  // cur is untouched, so a deliberately parked day stays exactly where it is;
+  // if the view is on today, this is what rolls it over to the new day.
+  render(cur, focusSel());
 }, 30000);
 </script>
 </body>
