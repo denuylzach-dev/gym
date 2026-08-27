@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="60">
+<title>Today's Session</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0F12;
+    --panel:#131A20;
+    --line:#232E37;
+    --ink:#F2F5F3;
+    --mute:#7A8590;
+    --amber:#FFB020;
+    --left:#5EC8D8;
+    --pad:2.2vw;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Barlow',system-ui,sans-serif;
+    font-size:1.15vw;
+    overflow:hidden;
+  }
+  .wrap{
+    height:100vh;
+    display:grid;
+    grid-template-columns:31% 1fr;
+    grid-template-rows:auto auto auto 1fr auto;
+    gap:0;
+  }
+
+  /* ---- header ---- */
+  header{
+    grid-column:1 / -1;
+    display:flex;
+    align-items:baseline;
+    gap:1.6vw;
+    padding:1.4vw var(--pad) 1.1vw;
+    border-bottom:2px solid var(--line);
+  }
+  .day{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;
+    font-size:4.4vw;
+    line-height:.9;
+    letter-spacing:-.01em;
+    text-transform:uppercase;
+  }
+  .session{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:600;
+    font-size:2.2vw;
+    color:var(--amber);
+    text-transform:uppercase;
+    letter-spacing:.02em;
+  }
+  .week{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.02vw;
+    font-weight:600;
+    letter-spacing:.1em;
+    color:var(--mute);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:.3vw .8vw;
+    margin-left:1.2vw;
+    white-space:nowrap;
+  }
+  .week.dl{
+    color:var(--bg);
+    background:var(--amber);
+    border-color:var(--amber);
+  }
+  .dlbar{
+    grid-column:1 / -1;
+    background:var(--amber);
+    color:var(--bg);
+    font-weight:600;
+    font-size:1.14vw;
+    padding:.6vw var(--pad);
+    line-height:1.35;
+  }
+  .navbar{
+    display:flex;
+    align-items:center;
+    gap:.6vw;
+    margin-left:auto;
+  }
+  .navbar button{
+    appearance:none;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:3px;
+    color:#C9D3DA;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.05vw;
+    font-weight:600;
+    letter-spacing:.06em;
+    padding:.42vw 1.1vw;
+    cursor:pointer;
+  }
+  .navbar button:focus{
+    outline:none;
+    background:var(--amber);
+    border-color:var(--amber);
+    color:var(--bg);
+  }
+  .navbar button:focus-visible{outline:none}
+  .people button:focus{
+    outline:none;
+    background:var(--left);
+    border-color:var(--left);
+    color:var(--bg);
+  }
+  .clock{
+    margin-left:auto;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.5vw;
+    color:var(--mute);
+    letter-spacing:.04em;
+  }
+  .people{
+    grid-column:1 / -1;
+    display:flex;
+    gap:0;
+    border-bottom:2px solid var(--line);
+    background:#0E1418;
+  }
+  .people button{
+    appearance:none;
+    background:none;
+    border:none;
+    border-right:1px solid var(--line);
+    color:var(--mute);
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:600;
+    font-size:1.5vw;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:.62vw 2.2vw;
+    cursor:pointer;
+  }
+  .people button[aria-selected="true"]{
+    color:var(--bg);
+    background:var(--amber);
+  }
+  .people button:focus-visible{outline:2px solid var(--left);outline-offset:-2px}
+  .hint{
+    margin-left:auto;
+    align-self:center;
+    padding-right:var(--pad);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.88vw;
+    color:#4A5560;
+    letter-spacing:.08em;
+  }
+
+  /* ---- rail ---- */
+  .rail{
+    padding:1.6vw var(--pad);
+    border-right:2px solid var(--line);
+    overflow:hidden;
+  }
+  .block{margin-bottom:1.9vw}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.95vw;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--mute);
+    margin-bottom:.7vw;
+  }
+  .rail ol{list-style:none;counter-reset:step}
+  .rail li{
+    counter-increment:step;
+    position:relative;
+    padding-left:2.1vw;
+    margin-bottom:.62vw;
+    font-size:1.28vw;
+    line-height:1.34;
+  }
+  .rail li::before{
+    content:counter(step);
+    position:absolute;
+    left:0; top:.12vw;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.98vw;
+    color:var(--mute);
+  }
+  .rail li b{font-weight:600}
+  .flow{
+    font-size:1.24vw;
+    line-height:1.5;
+    color:#C9D3DA;
+  }
+  .flow em{
+    font-style:normal;
+    color:var(--ink);
+    font-weight:600;
+  }
+  .L{
+    color:var(--left);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.9vw;
+    font-weight:600;
+    letter-spacing:.08em;
+    border:1px solid var(--left);
+    border-radius:2px;
+    padding:.05vw .34vw;
+    vertical-align:.12vw;
+    margin-left:.3vw;
+    white-space:nowrap;
+  }
+
+  /* ---- main table ---- */
+  main{padding:1.6vw var(--pad) 1.2vw;overflow:hidden;display:flex;flex-direction:column}
+  table{width:100%;border-collapse:collapse}
+  thead th{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.92vw;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--mute);
+    font-weight:500;
+    text-align:left;
+    padding-bottom:.7vw;
+    border-bottom:1px solid var(--line);
+  }
+  thead th.n{text-align:center}
+  tbody td{
+    padding:.86vw 0;
+    border-bottom:1px solid var(--line);
+    vertical-align:middle;
+  }
+  .move{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:600;
+    font-size:2.05vw;
+    line-height:1.05;
+    letter-spacing:.005em;
+  }
+  .reps{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:1.65vw;
+    white-space:nowrap;
+    padding-left:1.2vw;
+  }
+  td.n{text-align:center;padding-left:1vw}
+  .rpe{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.5vw;
+    color:#C9D3DA;
+  }
+  .rest{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.22vw;
+    color:var(--mute);
+    text-align:right;
+    white-space:nowrap;
+  }
+
+  .thead-tempo{
+    display:inline-flex;
+    gap:.16vw;
+  }
+  .thead-tempo span{
+    width:1.55vw;
+    display:block;
+    text-align:center;
+    font-size:.52vw;
+    letter-spacing:.02em;
+    color:#5C6873;
+  }
+  /* ---- signature: tempo readout ---- */
+  .tempo{display:inline-flex;gap:.16vw}
+  .tempo span{
+    width:1.55vw;
+    height:1.9vw;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:2px;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:1.16vw;
+    color:var(--ink);
+  }
+  .tempo span.x{color:var(--amber);border-color:var(--amber)}
+  .tempo span.z{color:#3E4A54}
+  .tempo.hold{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.14vw;
+    color:var(--mute);
+    letter-spacing:.08em;
+  }
+  .legend{
+    margin-top:auto;
+    padding-top:1vw;
+    border-top:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    gap:2.2vw;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.95vw;
+    color:var(--mute);
+    letter-spacing:.06em;
+  }
+  .legend .key{display:flex;align-items:center;gap:.5vw}
+  .legend .cells{display:inline-flex;gap:.16vw}
+  .legend .cells i{
+    width:1.15vw;height:1.4vw;
+    border:1px solid var(--line);
+    border-radius:2px;
+    display:flex;align-items:center;justify-content:center;
+    font-style:normal;
+    font-size:.72vw;
+    color:var(--mute);
+    background:var(--panel);
+  }
+
+  /* ---- notes ---- */
+  .notes{
+    grid-column:1 / -1;
+    border-top:2px solid var(--line);
+    padding:.9vw var(--pad);
+    display:flex;
+    gap:2.6vw;
+    font-size:1.16vw;
+    color:#C9D3DA;
+  }
+  .notes p{flex:1}
+  .notes strong{color:var(--amber);font-weight:600}
+
+  .cardio{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:1.4vw;
+    height:100%;
+  }
+  .big{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;
+    font-size:6.4vw;
+    line-height:.92;
+    letter-spacing:-.015em;
+  }
+  .big em{font-style:normal;color:var(--amber)}
+  .sub{font-size:1.5vw;color:#C9D3DA;line-height:1.5;max-width:36vw}
+
+  @media (max-width:900px){
+    body{font-size:3.4vw}
+    .wrap{grid-template-columns:1fr;grid-template-rows:auto auto auto auto 1fr auto;overflow:auto;height:auto}
+    .week{font-size:2.8vw}
+    .dlbar{font-size:3.2vw;padding:2vw var(--pad)}
+    .rail{border-right:none;border-bottom:2px solid var(--line)}
+    .day{font-size:11vw}.session{font-size:5.4vw}.clock{font-size:3.4vw}
+    .move{font-size:5vw}.reps{font-size:4.2vw}.rpe{font-size:4vw}.rest{font-size:3.2vw}
+    .eyebrow{font-size:2.6vw}.rail li,.flow{font-size:3.6vw}
+    .tempo span{width:4.4vw;height:5.4vw;font-size:3.4vw}
+    .thead-tempo span{width:4.4vw;font-size:1.5vw}
+    .big{font-size:13vw}.sub{font-size:4vw;max-width:none}
+    .notes{flex-direction:column;gap:1.4vw;font-size:3.4vw}
+    .legend{font-size:2.6vw;gap:4vw}
+    .legend .cells i{width:3.4vw;height:4vw;font-size:2.2vw}
+  }
+  @media (prefers-reduced-motion:no-preference){
+    .wrap{animation:fade .5s ease-out}
+    @keyframes fade{from{opacity:0}to{opacity:1}}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+const HIP = [
+  "<b>90/90 switches</b> — 8 each way. Hands down behind you is fine. Left rotation only to the pain-free edge.",
+  "<b>Half-kneeling hip flexor stretch</b> — 2 × 30s. Squeeze the glute first, then tuck.<span class='L'>LEFT ONLY</span>",
+  "<b>Glute bridge</b> — 10 reps, then one 20s hold at the top.",
+  "<b>Banded lateral walks</b> — 10 each way. Quarter squat, knees don't cave.",
+  "<b>Side-lying hip abduction</b> — 2 × 15 slow.<span class='L'>LEFT ONLY</span>"
+];
+
+const WARM = {
+  A: "Bar or light dumbbells → <em>ramp sets</em> of the first lift, 2–3 sets building to working weight.",
+  B: "<em>2 min easy</em>, then build each minute so you finish just under working pace.",
+  C: "Jump rope 2 min → lateral shuffles and carioca → A-skips and high knees → <em>3–4 building strides</em>, last one near sprint pace.",
+  D: "Band pull-aparts 2 × 15 → shoulder circles → arm swings → 10 push-ups → <em>1 light set</em> of the day's press."
+};
+
+const ZACH = {
+  1:{day:"Monday", session:"Speed + Lower", hip:true, warm:"C",
+    rows:[
+      ["Accelerations 10–15s","6 × 1","X","90%","full walk-back"],
+      ["Back squat","4 × 8","20X0","7","in circuit"],
+      ["Single-leg RDL","4 × 8/side","3010","6–7","in circuit",true],
+      ["Reverse lunge","4 × 8/side","2010","6–7","in circuit",true],
+      ["Hollow hold","4 × 30s","hold","—","2 min after round"]
+    ],
+    notes:["<strong>Stop the sprints</strong> when a rep is visibly slower than the one before — regardless of the count.",
+           "<strong>Left leads</strong> every single-leg movement. Right capped at whatever the left produced.",
+           "<strong>No spotter.</strong> Pins set on the squat, or cap at RPE 7."]},
+
+  2:{day:"Tuesday", session:"Upper + Core + Elbow Tendon", hip:false, warm:"D",
+    rows:[
+      ["Static biceps hold @ 90°","5 × 30s","hold","7","60s"],
+      ["Triceps pin press @ 90°","5 × 30s","hold","7","60s"],
+      ["Dead hang","3 × 30s","hold","—","in circuit"],
+      ["Overhead press","3 × 8","20X0","6–7","in circuit"],
+      ["Bird dog","3 × 8/side","2s pause","—","in circuit"],
+      ["Chest-supported row, neutral grip","3 × 10","3010","6–7","in circuit"],
+      ["Side plank","3 × 30s/side","hold","—","in circuit"],
+      ["Hollow hold","3 × 30s","hold","—","90s after round"]
+    ],
+    notes:["<strong>Isometrics first</strong>, before the circuit. They're the priority work and they need you fresh.",
+           "<strong>Hangs capped</strong> at 3 × 30s, bodyweight only. No added load.",
+           "<strong>Neutral grip</strong> on the row. Nothing explosive at the elbow today."]},
+
+  3:{day:"Wednesday", session:"VO2 Long", hip:false, warm:"B", cardio:{
+      big:"4 × <em>4 min</em> hard<br>2.5 min easy",
+      sub:"Treadmill by default. Hard means <em>3–4 words at a time</em> — not a sprint. Set the pace by what you can repeat for all four blocks, and make round four look like round one. The recovery is genuinely easy."},
+    notes:["<strong>Straight intervals.</strong> Never turned into a circuit — muscles quit before the heart does.",
+           "<strong>Swap to the rower</strong> only if a calf is actually talking. Not on a rotation.",
+           "<strong>Log it:</strong> average pace or split on the hard pieces."]},
+
+  4:{day:"Thursday", session:"Lower Tendon + Balance", hip:false, warm:"A",
+    rows:[
+      ["Single-leg calf raise, top hold","5 × 30s/side","hold","7","60s",true],
+      ["Front-foot-elevated split squat","3 × 6/side","3030","7","60s",true],
+      ["RDL","3 × 8","3030","7","60s"],
+      ["Single-leg stance, eyes closed","3 × 30s L / 1 × 30s R","hold","—","30s",true]
+    ],
+    notes:["<strong>Slow beats heavy.</strong> If the tempo breaks down, the weight is wrong.",
+           "<strong>Balance is left-weighted</strong> — even doses maintain a gap, uneven doses close it.",
+           "<strong>Cheapest day to lose.</strong> If time is short: calf raises and a wall sit, 10 minutes, done."]},
+
+  5:{day:"Friday", session:"Agility + Balance", hip:true, warm:"C",
+    rows:[
+      ["5-10-5","5 × 1","X","max","45s"],
+      ["Skater bounds","3 × 6/side","X, 1s stick","—","60s"],
+      ["Single-leg RDL","3 × 8/side","3010","6–7","in circuit",true],
+      ["Med ball rotational throw","3 × 6/side","X","—","in circuit"],
+      ["Suitcase carry","3 × 30s/side","—","6–7","in circuit"],
+      ["Ab wheel","3 × 8","3010","—","90s after round"],
+      ["Single-leg stance, eyes closed","3 × 30s L / 1 × 30s R","hold","—","30s",true]
+    ],
+    notes:["<strong>Land the bounds quietly.</strong> If you can hear them, you're not absorbing them. Stick each one.",
+           "<strong>Time the 5-10-5s.</strong> Stop early if quality drops.",
+           "<strong>Closest session to basketball.</strong> Treat it that way."]},
+
+  6:{day:"Saturday", session:"VO2 Short + Mixed Tendon", hip:false, warm:"B",
+    rows:[
+      ["Row intervals","10 × 30s / 30s","—","hard","30s"],
+      ["Static biceps hold @ 90°","3 × 30s","hold","7","60s"],
+      ["Spanish squat or wall sit","3 × 45s","hold","7","60s"],
+      ["Single-leg bridge hold","3 × 30s/side","hold","—","60s",true]
+    ],
+    notes:["<strong>Intervals first</strong>, tendon work after. Holds before a VO2 piece dull the intervals.",
+           "<strong>Hips level</strong> on the bridge — the lifted-leg side wants to sag.",
+           "<strong>Light hook grip</strong> on the rower. No death grip."]},
+
+  0:{day:"Sunday", session:"Play", hip:false, cardio:{
+      big:"Go <em>play</em>",
+      sub:"Not rest, and not a session. Basketball, chasing the kids, anything with real bursts in it. This is the point of the other six days and the honest test of whether any of it is working."},
+    notes:["<strong>If the week went badly</strong>, this still isn't the makeup slot. Start Monday fresh.",
+           "<strong>Log it</strong> like any other day — what you did, how it felt.",
+           "<strong>Aches?</strong> Name the side. That's the whole log."]}
+};
+
+// --- Add a person by dropping another program object in here. ---
+// Same shape as ZACH: keys 0–6 (Sunday = 0). Each day needs
+// { day, session, warm, rows OR cardio, notes }, plus hip:true if
+// a hip block applies. Set `hipBlock` on the person to give them
+// their own prep sequence; omit it to use the default.
+const PEOPLE = [
+  { name:"Zach", program:ZACH, hipBlock:HIP }
+];
+
+const REST_DAY = {
+  day:"Rest", session:"Nothing scheduled", hip:false,
+  cardio:{ big:"Rest day", sub:"Nothing programmed for today." },
+  notes:["<strong>Nothing to do here.</strong> Press left or right on the remote to look at another day."]
+};
+
+// ---- Block start. Change this one line to re-anchor the week counter. ----
+// Format: year, month (0 = January), day. Should be a Monday.
+const BLOCK_START = new Date(2026, 7, 24);   // Mon 24 Aug 2026 = Week 1
+
+function weekInfo(){
+  const now = new Date();
+  const a = new Date(BLOCK_START.getFullYear(), BLOCK_START.getMonth(), BLOCK_START.getDate());
+  const b = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  // roll today back to its Monday
+  const dow = (b.getDay() + 6) % 7;
+  b.setDate(b.getDate() - dow);
+  const weeks = Math.floor((b - a) / 604800000);
+  const n = weeks + 1;
+  return { n: n, deload: n > 0 && n % 4 === 0 };
+}
+
+function tempoCell(t){
+  if(!/^[0-9X]{4}$/.test(t)) return `<span class="tempo hold">${t}</span>`;
+  return `<div class="tempo">${t.split("").map(c=>{
+    const cls = c==="X" ? "x" : (c==="0" ? "z" : "");
+    return `<span class="${cls}">${c}</span>`;
+  }).join("")}</div>`;
+}
+
+function render(idx, refocus){
+  const person = PEOPLE[curPerson];
+  const d = person.program[idx] || REST_DAY;
+  const now = new Date();
+  const stamp = now.toLocaleDateString(undefined,{month:"short",day:"numeric"});
+
+  let rail = "";
+  const hipList = person.hipBlock || HIP;
+  if(d.hip){
+    rail += `<div class="block"><div class="eyebrow">Hip block — first</div><ol>${
+      hipList.map(h=>`<li>${h}</li>`).join("")}</ol></div>`;
+  }
+  if(d.warm){
+    rail += `<div class="block"><div class="eyebrow">Warm-up ${d.warm}</div>
+      <div class="flow">${WARM[d.warm]}</div></div>`;
+  }
+
+  let main;
+  if(d.cardio){
+    main = `<div class="cardio"><div class="big">${d.cardio.big}</div>
+      <div class="sub">${d.cardio.sub}</div></div>`;
+  } else {
+    main = `<table><thead><tr>
+      <th>Movement</th><th>Sets × reps</th><th class="n"><div class="thead-tempo"><span>DOWN</span><span>HOLD</span><span>UP</span><span>HOLD</span></div></th>
+      <th class="n">RPE</th><th style="text-align:right">Rest</th>
+    </tr></thead><tbody>${d.rows.map(r=>`<tr>
+      <td class="move">${r[0]}${r[5]?'<span class="L">LEFT FIRST</span>':''}</td>
+      <td class="reps">${r[1]}</td>
+      <td class="n">${tempoCell(r[2])}</td>
+      <td class="n rpe">${r[3]}</td>
+      <td class="rest">${r[4]}</td>
+    </tr>`).join("")}</tbody></table>
+    <div class="legend">
+      <div class="key">Each digit = seconds &nbsp; · &nbsp; <b style="color:var(--amber)">X</b> = explosive, move it fast &nbsp; · &nbsp; <b style="color:#3E4A54">0</b> = no pause</div>
+    </div>`;
+  }
+
+  const tabs = PEOPLE.length > 1 ? `<div class="people" role="tablist">${
+    PEOPLE.map((p,i)=>`<button role="tab" aria-selected="${i===curPerson}" data-p="${i}">${p.name}</button>`).join("")
+  }<div class="hint">D-PAD TO MOVE · SELECT TO CHOOSE</div></div>` : "";
+
+  const wk = weekInfo();
+  const weekBadge = wk.n > 0
+    ? `<div class="week${wk.deload ? ' dl' : ''}">WEEK ${wk.n}${wk.deload ? ' · DELOAD' : ''}</div>`
+    : "";
+
+  document.getElementById("app").innerHTML = `
+    ${tabs}
+    <header>
+      <div class="day">${d.day}</div>
+      <div class="session">${d.session}</div>
+      ${weekBadge}
+      <div class="navbar">
+        <button data-d="prev">◀ PREV</button>
+        <button data-d="today">TODAY · ${stamp}</button>
+        <button data-d="next">NEXT ▶</button>
+      </div>
+    </header>
+    ${wk.deload ? '<div class="dlbar">Deload week — same sessions, cut the working sets by about a third and hold RPE at 6. Keep the tempos and the balance work exactly as written.</div>' : ''}
+    <div class="rail">${rail || '<div class="eyebrow">No warm-up prescribed</div>'}</div>
+    <main>${main}</main>
+    <div class="notes">${d.notes.map(n=>`<p>${n}</p>`).join("")}</div>`;
+
+  if(refocus){
+    const el = document.querySelector(refocus);
+    if(el) el.focus();
+  }
+}
+
+let cur = new Date().getDay();
+let curPerson = 0;
+render(cur);
+
+// Remote d-pad: left/right = day, up/down = person, Home = back to today
+document.addEventListener("keydown", e=>{
+  const n = PEOPLE.length;
+  if(e.key==="ArrowRight"){ cur=(cur+1)%7; render(cur); }
+  else if(e.key==="ArrowLeft"){ cur=(cur+6)%7; render(cur); }
+  else if(e.key==="ArrowDown" && n>1){ curPerson=(curPerson+1)%n; render(cur); }
+  else if(e.key==="ArrowUp" && n>1){ curPerson=(curPerson+n-1)%n; render(cur); }
+  else if(e.key==="Home"){ cur=new Date().getDay(); curPerson=0; render(cur); }
+  else return;
+  e.preventDefault();
+});
+
+// Tap, click, or remote Select
+document.getElementById("app").addEventListener("click", e=>{
+  const p = e.target.closest("[data-p]");
+  if(p){ curPerson = +p.dataset.p; render(cur, p.dataset.p ? `[data-p="${p.dataset.p}"]` : null); return; }
+  const d = e.target.closest("[data-d]");
+  if(d){
+    if(d.dataset.d==="next") cur=(cur+1)%7;
+    else if(d.dataset.d==="prev") cur=(cur+6)%7;
+    else cur=new Date().getDay();
+    render(cur, `[data-d="${d.dataset.d}"]`);
+  }
+});
+</script>
+</body>
+</html>
