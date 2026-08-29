@@ -24,7 +24,6 @@
   /* Fixed design canvas — scaled by JS to fit any screen. */
   #stage{
     width:1600px;
-    transform-origin:center center;
     padding:23px 34px 26px;
     border-top:3px solid var(--amber);
   }
@@ -273,16 +272,17 @@ function showMessage(title, sub){
 
 function fit(){
   var stage = document.getElementById("stage");
-  stage.style.transform = "scale(1)";
+  // zoom (not transform) so layout width always equals what's shown —
+  // Silk's text inflation keys off layout-vs-viewport mismatch, so this
+  // starves it in fullscreen too.
+  stage.style.zoom = "1";
   var w = stage.offsetWidth, h = stage.offsetHeight;
-  // visualViewport is the truth when a browser bar is covering part of the page
   var vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
   var vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-  // ?safe=N shrinks the whole display N% for TVs that overscan (crop edges).
   var safe = parseFloat(new URLSearchParams(location.search).get("safe")) || 0;
   var margin = 0.985 * (1 - safe / 100);
   var s = Math.min(vw / w, vh / h) * margin;
-  stage.style.transform = "scale(" + s + ")";
+  stage.style.zoom = s;
 }
 if (window.visualViewport) window.visualViewport.addEventListener("resize", fit);
 
