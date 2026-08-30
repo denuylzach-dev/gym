@@ -26,6 +26,7 @@
     width:1600px;
     padding:23px 34px 26px;
     border-top:3px solid var(--amber);
+    display:flex;flex-direction:column;
   }
 
   /* ---- person tabs ---- */
@@ -74,10 +75,10 @@
     padding:11px 0;line-height:1.35;text-align:center}
 
   /* ---- body columns ---- */
-  .cols{display:flex;gap:30px;padding-top:18px;align-items:flex-start}
+  .cols{display:flex;gap:30px;padding-top:18px;align-items:flex-start;flex:1 1 auto}
   .rail{flex:0 0 470px;background:var(--panel);border:1px solid var(--line);
     border-radius:4px;padding:22px 24px}
-  main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column}
+  main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;align-self:stretch}
 
   .block{margin-bottom:26px}
   .block:last-child{margin-bottom:0}
@@ -114,7 +115,7 @@
   .move{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:33px;
     line-height:1.06;padding-right:14px}
   .reps{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:26px;
-    white-space:nowrap;text-align:center}
+    text-align:center;line-height:1.15}
   td.n{text-align:center}
   .rpe{font-family:'IBM Plex Mono',monospace;font-size:24px;color:#C9D3DA}
   .rest{font-family:'IBM Plex Mono',monospace;font-size:19px;color:var(--mute);
@@ -134,7 +135,7 @@
   .legend{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);
     font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--mute);letter-spacing:.05em}
 
-  .cardio{display:flex;flex-direction:column;justify-content:center;gap:24px;padding:40px 0}
+  .cardio{display:flex;flex-direction:column;justify-content:center;gap:24px;padding:40px 0;flex:1 1 auto}
   .big{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:104px;
     line-height:.94;letter-spacing:-.015em}
   .big em{font-style:normal;color:var(--amber)}
@@ -148,10 +149,9 @@
 </head>
 <body>
 <div id="stage"></div>
-<div id="dbg" style="display:none;position:fixed;left:6px;bottom:6px;z-index:99;font:600 22px/1.5 monospace;color:#5EC8D8;background:rgba(0,0,0,.55);padding:6px 10px;border-radius:3px"></div>
 <script>
 // ---- Live data source: Supabase (read-only key, safe to embed) ----
-var BUILD = "2026083004";
+var BUILD = "2026083005";
 var SB_URL = "https://jzwtdzftxbaicdothear.supabase.co";
 var SB_KEY = "sb_publishable_0xl6KnixnFi0Z2YKU91Sqg_Nbj5_14L";
 
@@ -274,11 +274,24 @@ function showMessage(title, sub){
 
 function fit(){
   var stage = document.getElementById("stage");
-  // zoom (not transform) so layout width always equals what's shown —
-  // Silk's text inflation keys off layout-vs-viewport mismatch, so this
-  // starves it in fullscreen too.
   stage.style.zoom = "1";
+  var de0 = document.documentElement;
+  var aspect = (de0.clientWidth || window.innerWidth) / (de0.clientHeight || window.innerHeight);
+  // Aspect-adaptive canvas: start at the 1600 design width; if content is
+  // taller than the screen's shape, widen the canvas (up to 2100) so the
+  // page fills both dimensions instead of leaving side margins.
+  stage.style.width = "1600px";
   var w = stage.offsetWidth, h = stage.offsetHeight;
+  stage.style.minHeight = "0";
+  if (h * aspect > w) {
+    w = Math.min(2100, Math.round(h * aspect));
+    stage.style.width = w + "px";
+    w = stage.offsetWidth; h = stage.offsetHeight;
+  } else {
+    // short day: grow the canvas to the screen's shape so notes sit at the bottom
+    stage.style.minHeight = Math.round(w / aspect) + "px";
+    h = stage.offsetHeight;
+  }
   // The one honest metric: documentElement.client* is the CSS layout canvas —
   // the same coordinate system zoom scales in. (visualViewport lowballs it,
   // innerWidth reports physical pixels on this WebView; both mislead.)
@@ -293,19 +306,6 @@ function fit(){
   document.body.style.width = vw + "px";
   document.body.style.height = vh + "px";
   window.scrollTo(0, 0);
-  // Diagnostic readout, fullscreen only — remove once TV sizing is settled
-  var dbg = document.getElementById("dbg");
-  if(dbg){
-    if(true){
-      dbg.style.display = "block";
-      dbg.textContent = "in:"+window.innerWidth+"x"+window.innerHeight+
-        " cl:"+de.clientWidth+"x"+de.clientHeight+
-        " vv:"+(window.visualViewport?Math.round(window.visualViewport.width)+"x"+Math.round(window.visualViewport.height):"n/a")+
-        " scr:"+screen.width+"x"+screen.height+
-        " dpr:"+(window.devicePixelRatio||1).toFixed(2)+
-        " stage:"+w+"x"+h+" s:"+s.toFixed(3);
-    } else dbg.style.display = "none";
-  }
 }
 if (window.visualViewport) window.visualViewport.addEventListener("resize", fit);
 
