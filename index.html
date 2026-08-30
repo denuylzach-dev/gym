@@ -277,8 +277,12 @@ function fit(){
   // starves it in fullscreen too.
   stage.style.zoom = "1";
   var w = stage.offsetWidth, h = stage.offsetHeight;
-  var vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
-  var vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  // Windowed: visualViewport accounts for the browser bar. Fullscreen: no bar
+  // exists, and Silk misreports visualViewport there — use the real viewport.
+  var fs = !!document.fullscreenElement;
+  var de = document.documentElement;
+  var vw = fs ? de.clientWidth  : (window.visualViewport ? window.visualViewport.width  : window.innerWidth);
+  var vh = fs ? de.clientHeight : (window.visualViewport ? window.visualViewport.height : window.innerHeight);
   var safe = parseFloat(new URLSearchParams(location.search).get("safe")) || 0;
   var margin = 0.985 * (1 - safe / 100);
   var s = Math.min(vw / w, vh / h) * margin;
