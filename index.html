@@ -148,10 +148,10 @@
 </head>
 <body>
 <div id="stage"></div>
-<div id="dbg" style="display:none;position:fixed;right:6px;bottom:6px;z-index:99;font:600 13px/1.5 monospace;color:#5EC8D8;background:rgba(0,0,0,.55);padding:6px 10px;border-radius:3px"></div>
+<div id="dbg" style="display:none;position:fixed;left:6px;bottom:6px;z-index:99;font:600 13px/1.5 monospace;color:#5EC8D8;background:rgba(0,0,0,.55);padding:6px 10px;border-radius:3px"></div>
 <script>
 // ---- Live data source: Supabase (read-only key, safe to embed) ----
-var BUILD = "2026083001";
+var BUILD = "2026083002";
 var SB_URL = "https://jzwtdzftxbaicdothear.supabase.co";
 var SB_KEY = "sb_publishable_0xl6KnixnFi0Z2YKU91Sqg_Nbj5_14L";
 
@@ -289,6 +289,10 @@ function fit(){
   var margin = 0.985 * (1 - safe / 100);
   var s = Math.min(vw / w, vh / h) * margin;
   stage.style.zoom = s;
+  // Center within the VISIBLE window, not the (possibly wider) layout canvas:
+  document.body.style.width = vw + "px";
+  document.body.style.height = vh + "px";
+  window.scrollTo(0, 0);
   // Diagnostic readout, fullscreen only — remove once TV sizing is settled
   var dbg = document.getElementById("dbg");
   if(dbg){
