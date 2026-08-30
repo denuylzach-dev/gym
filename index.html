@@ -153,7 +153,7 @@
 <div id="stage"></div>
 <script>
 // ---- Live data source: Supabase (read-only key, safe to embed) ----
-var BUILD = "2026083006";
+var BUILD = "2026083007";
 var SB_URL = "https://jzwtdzftxbaicdothear.supabase.co";
 var SB_KEY = "sb_publishable_0xl6KnixnFi0Z2YKU91Sqg_Nbj5_14L";
 
@@ -210,7 +210,7 @@ function render(idx, refocus){
   if(d.cardio){
     main = '<div class="cardio"><div class="big">'+d.cardio.big+'</div><div class="sub">'+d.cardio.sub+'</div></div>';
   } else {
-    var COLS = '<colgroup><col style="width:38%"><col style="width:20%"><col style="width:15%"><col style="width:9%"><col style="width:18%"></colgroup>';
+    var COLS = '<colgroup><col style="width:35%"><col style="width:24%"><col style="width:15%"><col style="width:9%"><col style="width:17%"></colgroup>';
     function rowsHtml(rows){
       return rows.map(function(r){
         return '<tr><td class="move">'+r[0]+(r[5]?'<span class="L">LEFT FIRST</span>':'')+'</td>'+
