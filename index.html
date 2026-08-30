@@ -151,6 +151,7 @@
 <div id="dbg" style="display:none;position:fixed;right:6px;bottom:6px;z-index:99;font:600 13px/1.5 monospace;color:#5EC8D8;background:rgba(0,0,0,.55);padding:6px 10px;border-radius:3px"></div>
 <script>
 // ---- Live data source: Supabase (read-only key, safe to embed) ----
+var BUILD = "2026083001";
 var SB_URL = "https://jzwtdzftxbaicdothear.supabase.co";
 var SB_KEY = "sb_publishable_0xl6KnixnFi0Z2YKU91Sqg_Nbj5_14L";
 
@@ -369,6 +370,17 @@ document.addEventListener("visibilitychange", function(){
 // Quiet refresh: re-fetch data every 60s without reloading the page,
 // so fullscreen survives. Also rolls the display to the new day at midnight
 // (only if you were viewing "today" — a day you navigated to stays put).
+// Self-update: every 5 min, check whether a newer page build was deployed;
+// if so, reload once. Ends all cache-clearing forever.
+setInterval(function(){
+  fetch(location.pathname + "?u=" + Date.now(), {cache:"no-store"})
+    .then(function(r){ return r.text(); })
+    .then(function(t){
+      var m = t.match(/BUILD = "(\d+)"/);
+      if(m && m[1] !== BUILD) location.reload();
+    }).catch(function(){});
+}, 300000);
+
 var lastToday = new Date().getDay();
 setInterval(function(){
   var t = new Date().getDay();
