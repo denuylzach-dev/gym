@@ -24,6 +24,7 @@
   /* Fixed design canvas — scaled by JS to fit any screen. */
   #stage{
     width:1600px;
+    flex:none;
     padding:23px 34px 26px;
     border-top:3px solid var(--amber);
     display:flex;flex-direction:column;
@@ -82,15 +83,15 @@
 
   .block{margin-bottom:26px}
   .block:last-child{margin-bottom:0}
-  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:16px;letter-spacing:.16em;
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:18px;letter-spacing:.16em;
     text-transform:uppercase;color:var(--mute);margin-bottom:11px}
   .rail ol{list-style:none;counter-reset:step}
-  .rail li{counter-increment:step;position:relative;padding-left:31px;
-    margin-bottom:10px;font-size:21px;line-height:1.32}
+  .rail li{counter-increment:step;position:relative;padding-left:34px;
+    margin-bottom:10px;font-size:24px;line-height:1.3}
   .rail li::before{content:counter(step);position:absolute;left:0;top:2px;
-    font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--mute)}
+    font-family:'IBM Plex Mono',monospace;font-size:18px;color:var(--mute)}
   .rail li b{font-weight:600}
-  .flow{font-size:21px;line-height:1.45;color:#C9D3DA}
+  .flow{font-size:24px;line-height:1.4;color:#C9D3DA}
   .flow em{font-style:normal;color:var(--ink);font-weight:600}
   .L{color:var(--left);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;
     letter-spacing:.08em;border:1px solid var(--left);border-radius:2px;
@@ -98,51 +99,52 @@
 
   .sechead{display:flex;justify-content:space-between;align-items:baseline;
     gap:20px;margin:18px 0 2px;
-    font-family:'IBM Plex Mono',monospace;font-size:15px;letter-spacing:.14em;
+    font-family:'IBM Plex Mono',monospace;font-size:18px;letter-spacing:.12em;
     text-transform:uppercase;color:var(--mute)}
   .sec:first-of-type .sechead{margin-top:8px}
-  .sechead .meta{font-size:14px;letter-spacing:.06em;text-transform:none;color:#8A96A1;text-align:right}
-  .sec.circuit{border-left:4px solid var(--amber);padding-left:18px;margin-top:4px}
+  .sechead .meta{font-size:20px;letter-spacing:.03em;text-transform:none;color:#B9C4CC;text-align:right}
+  .sec.circuit{position:relative;margin-top:4px}
+  .sec.circuit::before{content:'';position:absolute;left:-17px;top:0;bottom:0;width:4px;background:var(--amber)}
   .sec.circuit .sechead{color:var(--amber)}
 
   /* ---- table ---- */
   table{width:100%;border-collapse:collapse;table-layout:fixed}
-  thead th{font-family:'IBM Plex Mono',monospace;font-size:15px;letter-spacing:.14em;
+  thead th{font-family:'IBM Plex Mono',monospace;font-size:17px;letter-spacing:.14em;
     text-transform:uppercase;color:var(--mute);font-weight:500;text-align:left;
     padding-bottom:11px;border-bottom:1px solid var(--line)}
   thead th.n{text-align:center}
   tbody td{padding:13px 0;border-bottom:1px solid var(--line);vertical-align:middle}
-  .move{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:33px;
+  .move{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:34px;
     line-height:1.06;padding-right:14px}
-  .reps{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:26px;
+  .reps{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:28px;
     text-align:center;line-height:1.15}
   td.n{text-align:center}
-  .rpe{font-family:'IBM Plex Mono',monospace;font-size:24px;color:#C9D3DA}
-  .rest{font-family:'IBM Plex Mono',monospace;font-size:19px;color:var(--mute);
+  .rpe{font-family:'IBM Plex Mono',monospace;font-size:27px;color:#E6ECF0}
+  .rest{font-family:'IBM Plex Mono',monospace;font-size:24px;color:#B9C4CC;
     text-align:right;white-space:nowrap}
 
   /* tempo readout */
   .tempo{display:inline-flex;gap:3px}
-  .tempo span{width:26px;height:32px;display:flex;align-items:center;justify-content:center;
+  .tempo span{width:30px;height:36px;display:flex;align-items:center;justify-content:center;
     background:#0E1418;border:1px solid var(--line);border-radius:2px;
-    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:19px;color:var(--ink)}
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:22px;color:var(--ink)}
   .tempo span.x{color:var(--amber);border-color:var(--amber)}
   .tempo span.z{color:#3E4A54}
-  .tempo.hold{font-family:'IBM Plex Mono',monospace;font-size:19px;color:var(--mute);letter-spacing:.06em}
+  .tempo.hold{font-family:'IBM Plex Mono',monospace;font-size:23px;color:#B9C4CC;letter-spacing:.04em}
   .thead-tempo{display:inline-flex;gap:3px}
-  .thead-tempo span{width:26px;display:block;text-align:center;font-size:9px;color:#5C6873;letter-spacing:0}
+  .thead-tempo span{width:30px;display:block;text-align:center;font-size:11px;color:#7A8590;letter-spacing:0}
 
-  .legend{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);
-    font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--mute);letter-spacing:.05em}
+  .legend{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);
+    font-family:'IBM Plex Mono',monospace;font-size:18px;color:#8A96A1;letter-spacing:.03em}
 
   .cardio{display:flex;flex-direction:column;justify-content:center;gap:24px;padding:40px 0;flex:1 1 auto}
   .big{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:104px;
     line-height:.94;letter-spacing:-.015em}
   .big em{font-style:normal;color:var(--amber)}
-  .sub{font-size:25px;color:#C9D3DA;line-height:1.5}
+  .sub{font-size:29px;color:#D5DDE3;line-height:1.45}
 
   .notes{border-top:2px solid var(--line);margin-top:20px;padding-top:16px;
-    display:flex;gap:34px;font-size:19px;color:#C9D3DA;line-height:1.4}
+    display:flex;gap:34px;font-size:23px;color:#D5DDE3;line-height:1.35}
   .notes p{flex:1;border-left:3px solid var(--line);padding-left:14px}
   .notes strong{color:var(--amber);font-weight:600}
 </style>
@@ -151,7 +153,7 @@
 <div id="stage"></div>
 <script>
 // ---- Live data source: Supabase (read-only key, safe to embed) ----
-var BUILD = "2026083005";
+var BUILD = "2026083006";
 var SB_URL = "https://jzwtdzftxbaicdothear.supabase.co";
 var SB_KEY = "sb_publishable_0xl6KnixnFi0Z2YKU91Sqg_Nbj5_14L";
 
@@ -274,30 +276,33 @@ function showMessage(title, sub){
 
 function fit(){
   var stage = document.getElementById("stage");
+  var de = document.documentElement;
+  // Measure the true viewport with the canvas hidden — an overflowing canvas
+  // would otherwise inflate documentElement.clientWidth in mobile-viewport mode.
+  stage.style.display = "none";
+  document.body.style.width = ""; document.body.style.height = "";
+  var vw = de.clientWidth  || window.innerWidth;
+  var vh = de.clientHeight || window.innerHeight;
+  stage.style.display = "";
+  var aspect = vw / vh;
+
+  // Lay out at the 1600 design width, then widen the canvas (to 2100 max) if
+  // the content is taller than the screen's shape, so it fills both ways.
   stage.style.zoom = "1";
-  var de0 = document.documentElement;
-  var aspect = (de0.clientWidth || window.innerWidth) / (de0.clientHeight || window.innerHeight);
-  // Aspect-adaptive canvas: start at the 1600 design width; if content is
-  // taller than the screen's shape, widen the canvas (up to 2100) so the
-  // page fills both dimensions instead of leaving side margins.
+  stage.style.minHeight = "0";
   stage.style.width = "1600px";
   var w = stage.offsetWidth, h = stage.offsetHeight;
-  stage.style.minHeight = "0";
   if (h * aspect > w) {
     w = Math.min(2100, Math.round(h * aspect));
     stage.style.width = w + "px";
     w = stage.offsetWidth; h = stage.offsetHeight;
-  } else {
-    // short day: grow the canvas to the screen's shape so notes sit at the bottom
-    stage.style.minHeight = Math.round(w / aspect) + "px";
-    h = stage.offsetHeight;
   }
-  // The one honest metric: documentElement.client* is the CSS layout canvas —
-  // the same coordinate system zoom scales in. (visualViewport lowballs it,
-  // innerWidth reports physical pixels on this WebView; both mislead.)
-  var de = document.documentElement;
-  var vw = de.clientWidth  || window.innerWidth;
-  var vh = de.clientHeight || window.innerHeight;
+  // Settle the canvas to the screen's exact shape: shorter content stretches
+  // (notes pin to the bottom); taller content simply scales down.
+  stage.style.minHeight = Math.round(w / aspect) + "px";
+  h = stage.offsetHeight;
+
+  // ?safe=N shrinks the whole display N% for TVs that overscan (crop edges).
   var safe = parseFloat(new URLSearchParams(location.search).get("safe")) || 0;
   var margin = 0.985 * (1 - safe / 100);
   var s = Math.min(vw / w, vh / h) * margin;
@@ -307,7 +312,6 @@ function fit(){
   document.body.style.height = vh + "px";
   window.scrollTo(0, 0);
 }
-if (window.visualViewport) window.visualViewport.addEventListener("resize", fit);
 
 // Re-fit whenever the stage's natural size changes for any reason —
 // font swap, late layout, content update. This is what guarantees
