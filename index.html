@@ -18,8 +18,10 @@
   body{
     background:var(--bg); color:var(--ink);
     font-family:'Barlow',system-ui,sans-serif;
-    display:flex; align-items:center; justify-content:center;
+    position:relative;
   }
+  #stage{position:absolute;left:0;top:0}
+  #vvdbg{font:600 15px/1.4 'IBM Plex Mono',monospace;color:#5EC8D8;opacity:.8;margin-top:6px}
 
   /* Fixed design canvas — scaled by JS to fit any screen. */
   #stage{
@@ -153,7 +155,7 @@
 <div id="stage"></div>
 <script>
 // ---- Live data source: Supabase (read-only key, safe to embed) ----
-var BUILD = "2026083007";
+var BUILD = "2026083101";
 var SB_URL = "https://jzwtdzftxbaicdothear.supabase.co";
 var SB_KEY = "sb_publishable_0xl6KnixnFi0Z2YKU91Sqg_Nbj5_14L";
 
@@ -259,7 +261,8 @@ function render(idx, refocus){
     '<button data-d="fs">\u26f6</button></div></header>' +
     (wk.deload ? '<div class="dlbar">Deload week \u2014 cut working sets by about a third, hold RPE at 6. Keep tempos and balance work as written.</div>' : '') +
     '<div class="cols"><div class="rail">'+rail+'</div><main>'+main+'</main></div>' +
-    '<div class="notes">'+d.notes.map(function(n){ return '<p>'+n+'</p>'; }).join("")+'</div>';
+    '<div class="notes">'+d.notes.map(function(n){ return '<p>'+n+'</p>'; }).join("")+'</div>' +
+    '<div id="vvdbg"></div>';
 
   fit();
   if(refocus){
@@ -276,18 +279,16 @@ function showMessage(title, sub){
 
 function fit(){
   var stage = document.getElementById("stage");
-  var de = document.documentElement;
-  // Measure the true viewport with the canvas hidden — an overflowing canvas
-  // would otherwise inflate documentElement.clientWidth in mobile-viewport mode.
-  stage.style.display = "none";
-  document.body.style.width = ""; document.body.style.height = "";
-  var vw = de.clientWidth  || window.innerWidth;
-  var vh = de.clientHeight || window.innerHeight;
-  stage.style.display = "";
+  var de = document.documentElement, vv = window.visualViewport;
+  window.scrollTo(0, 0);
+  // The visible window — size AND position — from the API built for exactly that.
+  var vw = vv ? vv.width  : (de.clientWidth  || window.innerWidth);
+  var vh = vv ? vv.height : (de.clientHeight || window.innerHeight);
+  var ox = vv ? vv.offsetLeft : 0, oy = vv ? vv.offsetTop : 0;
   var aspect = vw / vh;
 
-  // Lay out at the 1600 design width, then widen the canvas (to 2100 max) if
-  // the content is taller than the screen's shape, so it fills both ways.
+  // Lay out at the design width; widen (to 2100 max) if the content is taller
+  // than the screen's shape; then settle the canvas to that exact shape.
   stage.style.zoom = "1";
   stage.style.minHeight = "0";
   stage.style.width = "1600px";
@@ -297,20 +298,22 @@ function fit(){
     stage.style.width = w + "px";
     w = stage.offsetWidth; h = stage.offsetHeight;
   }
-  // Settle the canvas to the screen's exact shape: shorter content stretches
-  // (notes pin to the bottom); taller content simply scales down.
   stage.style.minHeight = Math.round(w / aspect) + "px";
   h = stage.offsetHeight;
 
-  // ?safe=N shrinks the whole display N% for TVs that overscan (crop edges).
   var safe = parseFloat(new URLSearchParams(location.search).get("safe")) || 0;
   var margin = 0.985 * (1 - safe / 100);
   var s = Math.min(vw / w, vh / h) * margin;
   stage.style.zoom = s;
-  // Center within the VISIBLE window, not the (possibly wider) layout canvas:
-  document.body.style.width = vw + "px";
-  document.body.style.height = vh + "px";
-  window.scrollTo(0, 0);
+  // Anchor the scaled canvas to the visible window's own origin and center it there.
+  stage.style.left = Math.round((ox + (vw - w * s) / 2) / s) + "px";
+  stage.style.top  = Math.round((oy + (vh - h * s) / 2) / s) + "px";
+
+  var d = document.getElementById("vvdbg");
+  if (d) d.textContent = "vv " + Math.round(vw) + "x" + Math.round(vh) + " @" + Math.round(ox) + "," + Math.round(oy) +
+    "  cl " + de.clientWidth + "x" + de.clientHeight + "  in " + window.innerWidth + "x" + window.innerHeight +
+    "  scr " + screen.width + "x" + screen.height + "  dpr " + (window.devicePixelRatio||1).toFixed(2) +
+    "  canvas " + w + "x" + h + "  zoom " + s.toFixed(3);
 }
 
 // Re-fit whenever the stage's natural size changes for any reason —
