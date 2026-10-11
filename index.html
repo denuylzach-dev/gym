@@ -111,6 +111,10 @@
   .rest{font-family:'IBM Plex Mono',monospace;font-size:24px;color:#B9C4CC;
     text-align:right;white-space:nowrap}
 
+  /* how-to pictures (howto/<id>.svg), sized per day by render() */
+  td.thumb{padding:4px 14px 4px 0}
+  td.thumb img{display:block;width:100%;height:var(--th,56px);object-fit:contain;object-position:left center}
+
   /* tempo readout */
   .tempo{display:inline-flex;gap:3px}
   .tempo span{width:30px;height:36px;display:flex;align-items:center;justify-content:center;
@@ -144,7 +148,7 @@
 // The program comes from get_gym_display(k), which only answers with the right
 // key. The key is never in this repo: it rides in the TV's start URL (?k=...)
 // and is remembered on the device after the first load.
-var BUILD = "2026101102";
+var BUILD = "2026101103";
 var SB_URL = "https://jzwtdzftxbaicdothear.supabase.co";
 var SB_KEY = "sb_publishable_0xl6KnixnFi0Z2YKU91Sqg_Nbj5_14L";
 var KEY = readKey();
@@ -206,21 +210,29 @@ function render(idx, refocus){
   }
   if(!rail) rail = '<div class="eyebrow">No warm-up prescribed</div>';
 
-  var main;
-  if(d.cardio){
-    main = '<div class="cardio"><div class="big">'+d.cardio.big+'</div><div class="sub">'+d.cardio.sub+'</div></div>';
-  } else {
-    var COLS = '<colgroup><col style="width:35%"><col style="width:24%"><col style="width:15%"><col style="width:9%"><col style="width:17%"></colgroup>';
+  var dg = person.diagrams || {};
+  var allRows = d.cardio ? [] : (d.sections || [{rows: d.rows || []}]).reduce(function(a, s){ return a.concat(s.rows); }, []);
+  var thumbs = allRows.some(function(r){ return dg[r[0]]; });
+
+  // t = width (%) of the how-to picture column; 0 = no pictures that day.
+  function mainHtml(t){
+    if(d.cardio){
+      return '<div class="cardio"><div class="big">'+d.cardio.big+'</div><div class="sub">'+d.cardio.sub+'</div></div>';
+    }
+    var widths = t ? [t].concat([35,17,12,6,15].map(function(w){ return +(w * (100 - t) / 85).toFixed(2); }))
+                   : [35,24,15,9,17];
+    var COLS = '<colgroup>' + widths.map(function(w){ return '<col style="width:'+w+'%">'; }).join("") + '</colgroup>';
     function rowsHtml(rows){
       return rows.map(function(r){
-        return '<tr><td class="move">'+r[0]+(r[5]?'<span class="L">LEFT FIRST</span>':'')+'</td>'+
+        var pic = t ? '<td class="thumb">' + (dg[r[0]] ? '<img src="howto/'+dg[r[0]]+'.svg?b='+BUILD+'" alt="">' : '') + '</td>' : '';
+        return '<tr>'+pic+'<td class="move">'+r[0]+(r[5]?'<span class="L">LEFT FIRST</span>':'')+'</td>'+
           '<td class="reps">'+r[1]+'</td>'+
           '<td class="n">'+tempoCell(r[2])+'</td>'+
           '<td class="n rpe">'+r[3]+'</td>'+
           '<td class="rest">'+r[4]+'</td></tr>';
       }).join("");
     }
-    var head = '<table>'+COLS+'<thead><tr>'+
+    var head = '<table>'+COLS+'<thead><tr>'+(t ? '<th></th>' : '')+
       '<th>Movement</th><th style="text-align:center">Sets \u00d7 reps</th>'+
       '<th class="n"><div class="thead-tempo"><span>DOWN</span><span>HOLD</span><span>UP</span><span>HOLD</span></div></th>'+
       '<th class="n">RPE</th><th style="text-align:right">Rest</th>'+
@@ -234,7 +246,7 @@ function render(idx, refocus){
       return '<div class="sec'+(sec.circuit?' circuit':'')+'">'+hd+
         '<table>'+COLS+'<tbody>'+rowsHtml(sec.rows)+'</tbody></table></div>';
     }).join("");
-    main = head + secs +
+    return head + secs +
       '<div class="legend">Each digit = seconds &nbsp;\u00b7&nbsp; <b style="color:var(--amber)">X</b> = explosive, move it fast &nbsp;\u00b7&nbsp; <b style="color:#3E4A54">0</b> = no pause &nbsp;\u00b7&nbsp; <b style="color:var(--amber)">\u2503</b> circuit block: cycle it, don\u2019t finish one lift first</div>';
   }
 
@@ -242,7 +254,7 @@ function render(idx, refocus){
     ? '<div class="week'+(wk.deload?' dl':'')+'">WEEK '+wk.n+(wk.deload?' \u00b7 DELOAD':'')+'</div>'
     : "";
 
-  stage.innerHTML =
+  function page(t){ return '' +
     '<header><div class="day">'+d.day+'</div><div class="session">'+d.session+'</div>'+
     weekBadge +
     '<div class="navbar"><button data-d="prev">\u25c0</button>'+
@@ -252,10 +264,26 @@ function render(idx, refocus){
     (wk.deload ? '<div class="dlbar">' + (person.deloadInNumbers
       ? 'Deload week \u2014 already built into the numbers below. Do them as written.'
       : 'Deload week \u2014 cut working sets by about a third, hold RPE at 6. Keep tempos and balance work as written.') + '</div>' : '') +
-    '<div class="cols"><div class="rail">'+rail+'</div><main>'+main+'</main></div>' +
+    '<div class="cols"><div class="rail">'+rail+'</div><main>'+mainHtml(t)+'</main></div>' +
     '<div class="notes">'+d.notes.map(function(n){ return '<p>'+n+'</p>'; }).join("")+'</div>';
+  }
 
-  fit();
+  // Pictures start at row height and grow only while the screen's scale holds,
+  // so they use spare room on light days and never shrink the workout text.
+  var SIZES = thumbs ? [[15,56],[19,84],[24,112],[30,150]] : [[0,0]];
+  function show(i){
+    stage.style.setProperty("--th", SIZES[i][1] + "px");
+    stage.innerHTML = page(SIZES[i][0]);
+    fit();
+    return parseFloat(stage.style.zoom) || 1;
+  }
+  var base = show(0), best = 0, shown = 0;
+  for(var i = 1; i < SIZES.length; i++){
+    shown = i;
+    if(show(i) < base * 0.995) break;
+    best = i;
+  }
+  if(shown !== best) show(best);
   if(refocus){
     var el = document.querySelector(refocus);
     if(el) el.focus();
@@ -334,7 +362,8 @@ function load(){
       hipBlock: row.data.hip || null,
       warm: row.data.warm || {},
       blockStart: row.data.block_start || null,
-      deloadInNumbers: !!row.data.deload_in_numbers
+      deloadInNumbers: !!row.data.deload_in_numbers,
+      diagrams: row.data.diagrams || {}
     };
     render(cur);
   })
