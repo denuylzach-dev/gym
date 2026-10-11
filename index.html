@@ -144,7 +144,7 @@
 // The program comes from get_gym_display(k), which only answers with the right
 // key. The key is never in this repo: it rides in the TV's start URL (?k=...)
 // and is remembered on the device after the first load.
-var BUILD = "2026101101";
+var BUILD = "2026101102";
 var SB_URL = "https://jzwtdzftxbaicdothear.supabase.co";
 var SB_KEY = "sb_publishable_0xl6KnixnFi0Z2YKU91Sqg_Nbj5_14L";
 var KEY = readKey();
@@ -249,7 +249,9 @@ function render(idx, refocus){
     '<button data-d="today">TODAY \u00b7 '+stamp+'</button>'+
     '<button data-d="next">\u25b6</button>'+
     '<button data-d="fs">\u26f6</button></div></header>' +
-    (wk.deload ? '<div class="dlbar">Deload week \u2014 cut working sets by about a third, hold RPE at 6. Keep tempos and balance work as written.</div>' : '') +
+    (wk.deload ? '<div class="dlbar">' + (person.deloadInNumbers
+      ? 'Deload week \u2014 already built into the numbers below. Do them as written.'
+      : 'Deload week \u2014 cut working sets by about a third, hold RPE at 6. Keep tempos and balance work as written.') + '</div>' : '') +
     '<div class="cols"><div class="rail">'+rail+'</div><main>'+main+'</main></div>' +
     '<div class="notes">'+d.notes.map(function(n){ return '<p>'+n+'</p>'; }).join("")+'</div>';
 
@@ -331,7 +333,8 @@ function load(){
       program: row.data.program || {},
       hipBlock: row.data.hip || null,
       warm: row.data.warm || {},
-      blockStart: row.data.block_start || null
+      blockStart: row.data.block_start || null,
+      deloadInNumbers: !!row.data.deload_in_numbers
     };
     render(cur);
   })
