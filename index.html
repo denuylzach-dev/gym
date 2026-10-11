@@ -112,7 +112,7 @@
     text-align:right;white-space:nowrap}
 
   /* how-to pictures (howto/<id>.svg), sized per day by render() */
-  td.thumb{padding:4px 14px 4px 0}
+  td.thumb{padding:2px 14px 2px 0}
   td.thumb img{display:block;width:100%;height:var(--th,56px);object-fit:contain;object-position:left center}
 
   /* tempo readout */
@@ -148,7 +148,7 @@
 // The program comes from get_gym_display(k), which only answers with the right
 // key. The key is never in this repo: it rides in the TV's start URL (?k=...)
 // and is remembered on the device after the first load.
-var BUILD = "2026101103";
+var BUILD = "2026101104";
 var SB_URL = "https://jzwtdzftxbaicdothear.supabase.co";
 var SB_KEY = "sb_publishable_0xl6KnixnFi0Z2YKU91Sqg_Nbj5_14L";
 var KEY = readKey();
@@ -219,8 +219,12 @@ function render(idx, refocus){
     if(d.cardio){
       return '<div class="cardio"><div class="big">'+d.cardio.big+'</div><div class="sub">'+d.cardio.sub+'</div></div>';
     }
-    var widths = t ? [t].concat([35,17,12,6,15].map(function(w){ return +(w * (100 - t) / 85).toFixed(2); }))
-                   : [35,24,15,9,17];
+    // With pictures, tempo/RPE/rest keep fixed widths (tempo boxes need 13%, and
+    // rest keeps its full 17% so "90s after round" never runs off the screen).
+    // Movement keeps its 35% at the smallest pictures so names don't wrap more;
+    // larger pictures borrow from movement and sets (and only stick if nothing shrinks).
+    var mv = Math.min(35, 35 - (t - 10) * 0.6);
+    var widths = t ? [t, mv, 64 - t - mv, 13, 6, 17] : [35,24,15,9,17];
     var COLS = '<colgroup>' + widths.map(function(w){ return '<col style="width:'+w+'%">'; }).join("") + '</colgroup>';
     function rowsHtml(rows){
       return rows.map(function(r){
@@ -268,20 +272,20 @@ function render(idx, refocus){
     '<div class="notes">'+d.notes.map(function(n){ return '<p>'+n+'</p>'; }).join("")+'</div>';
   }
 
-  // Pictures start at row height and grow only while the screen's scale holds,
-  // so they use spare room on light days and never shrink the workout text.
-  var SIZES = thumbs ? [[15,56],[19,84],[24,112],[30,150]] : [[0,0]];
+  // Measure the day without pictures, then keep the largest picture layout
+  // [column %, height px] that doesn't lower the screen's scale, so pictures
+  // use spare room and never shrink the text. If none is free, use the smallest.
+  var SIZES = thumbs ? [[0,0],[10,56],[15,56],[19,84],[24,112],[30,150]] : [[0,0]];
   function show(i){
     stage.style.setProperty("--th", SIZES[i][1] + "px");
     stage.innerHTML = page(SIZES[i][0]);
     fit();
     return parseFloat(stage.style.zoom) || 1;
   }
-  var base = show(0), best = 0, shown = 0;
+  var base = show(0), best = thumbs ? 1 : 0, shown = 0;
   for(var i = 1; i < SIZES.length; i++){
     shown = i;
-    if(show(i) < base * 0.995) break;
-    best = i;
+    if(show(i) >= base * 0.995) best = i;
   }
   if(shown !== best) show(best);
   if(refocus){
@@ -375,7 +379,8 @@ function load(){
 load();
 window.addEventListener("resize", fit);
 window.addEventListener("load", fit);
-if(document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+// Once the real fonts are in, re-render so the picture size is chosen with true text metrics.
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ if(ME) render(cur); else fit(); });
 setTimeout(fit, 400);
 setTimeout(fit, 1500);
 document.addEventListener("fullscreenchange", fit);
