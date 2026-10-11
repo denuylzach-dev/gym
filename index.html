@@ -65,7 +65,7 @@
 
   /* ---- body columns ---- */
   .cols{display:flex;gap:30px;padding-top:18px;align-items:flex-start;flex:1 1 auto}
-  .rail{flex:0 0 470px;background:var(--panel);border:1px solid var(--line);
+  .rail{flex:0 0 var(--rw,470px);background:var(--panel);border:1px solid var(--line);
     border-radius:4px;padding:22px 24px}
   main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;align-self:stretch}
 
@@ -115,6 +115,12 @@
   td.thumb{padding:2px 14px 2px 0}
   td.thumb img{display:block;width:100%;height:var(--th,56px);object-fit:contain;object-position:left center}
 
+  /* hip block pictures: numbered strip under the heading, matching the list */
+  .hipstrip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:2px 0 16px}
+  .hipstrip figure{margin:0;position:relative;padding-left:14px;min-width:0}
+  .hipstrip figure span{position:absolute;left:0;top:-2px;font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--mute)}
+  .hipstrip img{display:block;width:100%;height:var(--hh,56px);object-fit:contain;object-position:center bottom}
+
   /* tempo readout */
   .tempo{display:inline-flex;gap:3px}
   .tempo span{width:30px;height:36px;display:flex;align-items:center;justify-content:center;
@@ -148,7 +154,7 @@
 // The program comes from get_gym_display(k), which only answers with the right
 // key. The key is never in this repo: it rides in the TV's start URL (?k=...)
 // and is remembered on the device after the first load.
-var BUILD = "2026101104";
+var BUILD = "2026101105";
 var SB_URL = "https://jzwtdzftxbaicdothear.supabase.co";
 var SB_KEY = "sb_publishable_0xl6KnixnFi0Z2YKU91Sqg_Nbj5_14L";
 var KEY = readKey();
@@ -200,15 +206,23 @@ function render(idx, refocus){
   var stamp = new Date().toLocaleDateString(undefined,{month:"short",day:"numeric"});
   var wk = weekInfo(person);
 
-  var rail = "";
-  if(d.hip && person.hipBlock && person.hipBlock.length){
-    rail += '<div class="block"><div class="eyebrow">Hip block \u2014 first</div><ol>' +
-      person.hipBlock.map(function(h){ return '<li>'+h+'</li>'; }).join("") + '</ol></div>';
+  // The hip block is always written out in full; with pictures, a numbered
+  // strip of them sits under the heading, matching the list below it.
+  var hipPics = !!(d.hip && person.hipBlock && person.hipBlock.length && person.hipDiagrams && person.hipDiagrams.length);
+  function railHtml(strip){
+    var r = "";
+    if(d.hip && person.hipBlock && person.hipBlock.length){
+      r += '<div class="block"><div class="eyebrow">Hip block \u2014 first</div>' +
+        (strip ? '<div class="hipstrip">' + person.hipDiagrams.map(function(id, n){
+          return '<figure><span>'+(n+1)+'</span><img src="howto/'+id+'.svg?b='+BUILD+'" alt=""></figure>';
+        }).join("") + '</div>' : '') + '<ol>' +
+        person.hipBlock.map(function(h){ return '<li>'+h+'</li>'; }).join("") + '</ol></div>';
+    }
+    if(d.warm && person.warm && person.warm[d.warm]){
+      r += '<div class="block"><div class="eyebrow">Warm-up '+d.warm+'</div><div class="flow">'+person.warm[d.warm]+'</div></div>';
+    }
+    return r || '<div class="eyebrow">No warm-up prescribed</div>';
   }
-  if(d.warm && person.warm && person.warm[d.warm]){
-    rail += '<div class="block"><div class="eyebrow">Warm-up '+d.warm+'</div><div class="flow">'+person.warm[d.warm]+'</div></div>';
-  }
-  if(!rail) rail = '<div class="eyebrow">No warm-up prescribed</div>';
 
   var dg = person.diagrams || {};
   var allRows = d.cardio ? [] : (d.sections || [{rows: d.rows || []}]).reduce(function(a, s){ return a.concat(s.rows); }, []);
@@ -258,7 +272,7 @@ function render(idx, refocus){
     ? '<div class="week'+(wk.deload?' dl':'')+'">WEEK '+wk.n+(wk.deload?' \u00b7 DELOAD':'')+'</div>'
     : "";
 
-  function page(t){ return '' +
+  function page(t, strip){ return '' +
     '<header><div class="day">'+d.day+'</div><div class="session">'+d.session+'</div>'+
     weekBadge +
     '<div class="navbar"><button data-d="prev">\u25c0</button>'+
@@ -268,26 +282,55 @@ function render(idx, refocus){
     (wk.deload ? '<div class="dlbar">' + (person.deloadInNumbers
       ? 'Deload week \u2014 already built into the numbers below. Do them as written.'
       : 'Deload week \u2014 cut working sets by about a third, hold RPE at 6. Keep tempos and balance work as written.') + '</div>' : '') +
-    '<div class="cols"><div class="rail">'+rail+'</div><main>'+mainHtml(t)+'</main></div>' +
+    '<div class="cols"><div class="rail">'+railHtml(strip)+'</div><main>'+mainHtml(t)+'</main></div>' +
     '<div class="notes">'+d.notes.map(function(n){ return '<p>'+n+'</p>'; }).join("")+'</div>';
   }
 
-  // Measure the day without pictures, then keep the largest picture layout
-  // [column %, height px] that doesn't lower the screen's scale, so pictures
-  // use spare room and never shrink the text. If none is free, use the smallest.
-  var SIZES = thumbs ? [[0,0],[10,56],[15,56],[19,84],[24,112],[30,150]] : [[0,0]];
-  function show(i){
-    stage.style.setProperty("--th", SIZES[i][1] + "px");
-    stage.innerHTML = page(SIZES[i][0]);
+  // Picture layout: t = table picture column %, th = its height, rw = rail
+  // width, hh = hip strip height (0 = no strip). Measure the day without any
+  // pictures, then (1) find the tallest hip strip that fits without lowering
+  // the screen's scale, widening the rail into spare table width if that helps;
+  // (2) grow the table pictures while the scale still holds. If no hip strip is
+  // free, use the smallest one at the rail width that costs least. Choices are
+  // cached per day and data, so the 60s refresh doesn't redo the search.
+  function show(c){
+    stage.style.setProperty("--th", c.th + "px");
+    stage.style.setProperty("--hh", c.hh + "px");
+    stage.style.setProperty("--rw", c.rw + "px");
+    stage.innerHTML = page(c.t, c.hh > 0);
     fit();
     return parseFloat(stage.style.zoom) || 1;
   }
-  var base = show(0), best = thumbs ? 1 : 0, shown = 0;
-  for(var i = 1; i < SIZES.length; i++){
-    shown = i;
-    if(show(i) >= base * 0.995) best = i;
+  var cache = render.cache || (render.cache = {});
+  var key = [idx, window.innerWidth, window.innerHeight,
+             JSON.stringify([d, person.hipBlock, person.hipDiagrams, person.warm, dg, wk])].join("|");
+  var cfg = cache[key];
+  if(!cfg){
+    var base = show({t:0, th:0, rw:470, hh:0});
+    var TH = thumbs ? [[10,56],[15,56],[19,84],[24,112],[30,150]] : [[0,0]];
+    cfg = {t:TH[0][0], th:TH[0][1], rw:470, hh:0};
+    var z = thumbs ? show(cfg) : base;
+    if(hipPics){
+      var pick = null, pz = -1;
+      search:
+      for(var a = 0; a < 4; a++){
+        for(var b = 0; b < 4; b++){
+          var c = {t:cfg.t, th:cfg.th, rw:[470,520,570,620][b], hh:[84,70,56,44][a]}, cz = show(c);
+          if(cz >= base * 0.995){ pick = c; pz = cz; break search; }
+          if(a === 3 && cz > pz){ pick = c; pz = cz; }
+        }
+      }
+      cfg = pick; z = pz;
+    }
+    var limit = Math.min(base, z) * 0.995;
+    for(var i = 1; i < TH.length; i++){
+      var c2 = {t:TH[i][0], th:TH[i][1], rw:cfg.rw, hh:cfg.hh};
+      if(show(c2) >= limit) cfg = c2;
+    }
+    // Only trust a layout measured with the real fonts; until then, search again.
+    if(!document.fonts || document.fonts.status === "loaded") cache[key] = cfg;
   }
-  if(shown !== best) show(best);
+  show(cfg);
   if(refocus){
     var el = document.querySelector(refocus);
     if(el) el.focus();
@@ -364,6 +407,7 @@ function load(){
     ME = {
       program: row.data.program || {},
       hipBlock: row.data.hip || null,
+      hipDiagrams: row.data.hip_diagrams || null,
       warm: row.data.warm || {},
       blockStart: row.data.block_start || null,
       deloadInNumbers: !!row.data.deload_in_numbers,
@@ -381,6 +425,8 @@ window.addEventListener("resize", fit);
 window.addEventListener("load", fit);
 // Once the real fonts are in, re-render so the picture size is chosen with true text metrics.
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ if(ME) render(cur); else fit(); });
+if(document.fonts && document.fonts.addEventListener)
+  document.fonts.addEventListener("loadingdone", function(){ if(ME) render(cur); });
 setTimeout(fit, 400);
 setTimeout(fit, 1500);
 document.addEventListener("fullscreenchange", fit);
