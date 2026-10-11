@@ -21,7 +21,6 @@
     position:relative;
   }
   #stage{position:absolute;left:0;top:0}
-  #vvdbg{font:600 15px/1.4 'IBM Plex Mono',monospace;color:#5EC8D8;opacity:.8;margin-top:6px}
 
   /* Fixed design canvas — scaled by JS to fit any screen. */
   #stage{
@@ -31,19 +30,6 @@
     border-top:3px solid var(--amber);
     display:flex;flex-direction:column;
   }
-
-  /* ---- person tabs ---- */
-  .people{display:flex;border-bottom:2px solid var(--line);background:#0E1418;margin-bottom:0}
-  .people button{
-    appearance:none;background:none;border:none;border-right:1px solid var(--line);
-    color:var(--mute);font-family:'Barlow Condensed',sans-serif;font-weight:600;
-    font-size:26px;letter-spacing:.06em;text-transform:uppercase;
-    padding:9px 40px;cursor:pointer;
-  }
-  .people button[aria-selected="true"]{color:var(--bg);background:var(--amber)}
-  .people button:focus{outline:none;background:var(--left);color:var(--bg)}
-  .hint{margin-left:auto;align-self:center;padding-right:14px;
-    font-family:'IBM Plex Mono',monospace;font-size:15px;color:#4A5560;letter-spacing:.08em}
 
   /* ---- header ---- */
   header{
@@ -154,14 +140,26 @@
 <body>
 <div id="stage"></div>
 <script>
-// ---- Live data source: Supabase (read-only key, safe to embed) ----
-var BUILD = "2026083101";
+// ---- Live data source: Supabase ----
+// The program comes from get_gym_display(k), which only answers with the right
+// key. The key is never in this repo: it rides in the TV's start URL (?k=...)
+// and is remembered on the device after the first load.
+var BUILD = "2026101101";
 var SB_URL = "https://jzwtdzftxbaicdothear.supabase.co";
 var SB_KEY = "sb_publishable_0xl6KnixnFi0Z2YKU91Sqg_Nbj5_14L";
+var KEY = readKey();
 
-var PEOPLE = [];
+var ME = null;
 var cur = new Date().getDay();
-var curPerson = 0;
+
+function readKey(){
+  var k = new URLSearchParams(location.search).get("k") || "";
+  try {
+    if(k) localStorage.setItem("gymKey", k);
+    else k = localStorage.getItem("gymKey") || "";
+  } catch(e) {}
+  return k;
+}
 
 var REST_DAY = {
   day:"Rest", session:"Nothing scheduled", hip:false,
@@ -192,8 +190,8 @@ function tempoCell(t){
 
 function render(idx, refocus){
   var stage = document.getElementById("stage");
-  if(!PEOPLE.length){ return; }
-  var person = PEOPLE[curPerson];
+  if(!ME){ return; }
+  var person = ME;
   var d = person.program[String(idx)] || REST_DAY;
   var stamp = new Date().toLocaleDateString(undefined,{month:"short",day:"numeric"});
   var wk = weekInfo(person);
@@ -240,19 +238,11 @@ function render(idx, refocus){
       '<div class="legend">Each digit = seconds &nbsp;\u00b7&nbsp; <b style="color:var(--amber)">X</b> = explosive, move it fast &nbsp;\u00b7&nbsp; <b style="color:#3E4A54">0</b> = no pause &nbsp;\u00b7&nbsp; <b style="color:var(--amber)">\u2503</b> circuit block: cycle it, don\u2019t finish one lift first</div>';
   }
 
-  var tabs = "";
-  if(PEOPLE.length > 1){
-    tabs = '<div class="people" role="tablist">' + PEOPLE.map(function(p,i){
-      return '<button role="tab" aria-selected="'+(i===curPerson)+'" data-p="'+i+'">'+p.name+'</button>';
-    }).join("") + '<div class="hint">D-PAD TO MOVE \u00b7 SELECT TO CHOOSE</div></div>';
-  }
-
   var weekBadge = wk.n > 0
     ? '<div class="week'+(wk.deload?' dl':'')+'">WEEK '+wk.n+(wk.deload?' \u00b7 DELOAD':'')+'</div>'
     : "";
 
   stage.innerHTML =
-    tabs +
     '<header><div class="day">'+d.day+'</div><div class="session">'+d.session+'</div>'+
     weekBadge +
     '<div class="navbar"><button data-d="prev">\u25c0</button>'+
@@ -261,8 +251,7 @@ function render(idx, refocus){
     '<button data-d="fs">\u26f6</button></div></header>' +
     (wk.deload ? '<div class="dlbar">Deload week \u2014 cut working sets by about a third, hold RPE at 6. Keep tempos and balance work as written.</div>' : '') +
     '<div class="cols"><div class="rail">'+rail+'</div><main>'+main+'</main></div>' +
-    '<div class="notes">'+d.notes.map(function(n){ return '<p>'+n+'</p>'; }).join("")+'</div>' +
-    '<div id="vvdbg"></div>';
+    '<div class="notes">'+d.notes.map(function(n){ return '<p>'+n+'</p>'; }).join("")+'</div>';
 
   fit();
   if(refocus){
@@ -309,11 +298,6 @@ function fit(){
   stage.style.left = Math.round((ox + (vw - w * s) / 2) / s) + "px";
   stage.style.top  = Math.round((oy + (vh - h * s) / 2) / s) + "px";
 
-  var d = document.getElementById("vvdbg");
-  if (d) d.textContent = "vv " + Math.round(vw) + "x" + Math.round(vh) + " @" + Math.round(ox) + "," + Math.round(oy) +
-    "  cl " + de.clientWidth + "x" + de.clientHeight + "  in " + window.innerWidth + "x" + window.innerHeight +
-    "  scr " + screen.width + "x" + screen.height + "  dpr " + (window.devicePixelRatio||1).toFixed(2) +
-    "  canvas " + w + "x" + h + "  zoom " + s.toFixed(3);
 }
 
 // Re-fit whenever the stage's natural size changes for any reason —
@@ -325,22 +309,30 @@ if (window.ResizeObserver) {
 }
 
 function load(){
-  fetch(SB_URL + "/rest/v1/gym_display?select=person,sort,data&order=sort", {
-    headers: { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY }
-  })
+  var auth = { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY };
+  // Without a key, fall back to the old open read (empty once it's locked).
+  var req = KEY
+    ? fetch(SB_URL + "/rest/v1/rpc/get_gym_display", {
+        method: "POST",
+        headers: Object.assign({ "Content-Type": "application/json" }, auth),
+        body: JSON.stringify({ k: KEY })
+      })
+    : fetch(SB_URL + "/rest/v1/gym_display?select=person,sort,data&order=sort", { headers: auth });
+  req
   .then(function(r){ if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
   .then(function(rows){
-    PEOPLE = rows.map(function(row){
-      return {
-        name: row.data.name || row.person,
-        program: row.data.program || {},
-        hipBlock: row.data.hip || null,
-        warm: row.data.warm || {},
-        blockStart: row.data.block_start || null
-      };
-    });
-    if(!PEOPLE.length){ showMessage("No programs yet", "The database is empty."); return; }
-    if(curPerson >= PEOPLE.length) curPerson = 0;
+    if(!rows.length){
+      if(KEY) showMessage("Key not recognised", "Check the k= value at the end of the start URL.");
+      else showMessage("This screen needs its key", "Add ?k= and your key to the end of the start URL.");
+      return;
+    }
+    var row = rows[0];
+    ME = {
+      program: row.data.program || {},
+      hipBlock: row.data.hip || null,
+      warm: row.data.warm || {},
+      blockStart: row.data.block_start || null
+    };
     render(cur);
   })
   .catch(function(err){
@@ -403,19 +395,14 @@ setInterval(function(){
 }, 60000);
 
 document.addEventListener("keydown", function(e){
-  var n = PEOPLE.length;
   if(e.key==="ArrowRight"){ cur=(cur+1)%7; render(cur); }
   else if(e.key==="ArrowLeft"){ cur=(cur+6)%7; render(cur); }
-  else if(e.key==="ArrowDown" && n>1){ curPerson=(curPerson+1)%n; render(cur); }
-  else if(e.key==="ArrowUp" && n>1){ curPerson=(curPerson+n-1)%n; render(cur); }
-  else if(e.key==="Home"){ cur=new Date().getDay(); curPerson=0; render(cur); }
+  else if(e.key==="Home"){ cur=new Date().getDay(); render(cur); }
   else return;
   e.preventDefault();
 });
 
 document.getElementById("stage").addEventListener("click", function(e){
-  var p = e.target.closest("[data-p]");
-  if(p){ curPerson = +p.dataset.p; render(cur, '[data-p="'+p.dataset.p+'"]'); return; }
   var d = e.target.closest("[data-d]");
   if(d){
     if(d.dataset.d==="fs"){
