@@ -59,6 +59,13 @@
     letter-spacing:.06em;padding:8px 18px;cursor:pointer;white-space:nowrap;
   }
   .navbar button:focus{outline:none;background:var(--amber);border-color:var(--amber);color:var(--bg)}
+  /* wall clock: fixed width (8 digit cells) so the layout never moves as it ticks */
+  .clock{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:62px;line-height:.9;
+    color:var(--ink);white-space:nowrap;flex:0 0 auto;letter-spacing:-.02em}
+  .clock .t{display:inline-block;width:8ch;text-align:right}
+  .clock i{font-style:normal;color:var(--mute)}
+  .clock .s{color:var(--amber)}
+  .clock .ap{font-size:22px;letter-spacing:.06em;color:var(--mute);margin-left:8px}
 
   .dlbar{background:var(--amber);color:var(--bg);font-weight:600;font-size:19px;
     padding:11px 0;line-height:1.35;text-align:center}
@@ -154,7 +161,7 @@
 // The program comes from get_gym_display(k), which only answers with the right
 // key. The key is never in this repo: it rides in the TV's start URL (?k=...)
 // and is remembered on the device after the first load.
-var BUILD = "2026101105";
+var BUILD = "2026101201";
 var SB_URL = "https://jzwtdzftxbaicdothear.supabase.co";
 var SB_KEY = "sb_publishable_0xl6KnixnFi0Z2YKU91Sqg_Nbj5_14L";
 var KEY = readKey();
@@ -196,6 +203,14 @@ function tempoCell(t){
     return '<span class="'+cls+'">'+c+'</span>';
   }).join("");
   return '<div class="tempo">'+cells+'</div>';
+}
+
+// Wall clock from the device's own time, so the Stick has to be on local time.
+function clockHtml(){
+  var n = new Date(), h = n.getHours() % 12 || 12;
+  function two(x){ return (x < 10 ? "0" : "") + x; }
+  return '<span class="t">'+h+'<i>:</i>'+two(n.getMinutes())+'<i>:</i><span class="s">'+two(n.getSeconds())+'</span></span>'+
+    '<span class="ap">'+(n.getHours() < 12 ? "AM" : "PM")+'</span>';
 }
 
 function render(idx, refocus){
@@ -278,7 +293,8 @@ function render(idx, refocus){
     '<div class="navbar"><button data-d="prev">\u25c0</button>'+
     '<button data-d="today">TODAY \u00b7 '+stamp+'</button>'+
     '<button data-d="next">\u25b6</button>'+
-    '<button data-d="fs">\u26f6</button></div></header>' +
+    '<button data-d="fs">\u26f6</button></div>' +
+    '<div class="clock" id="clock">'+clockHtml()+'</div></header>' +
     (wk.deload ? '<div class="dlbar">' + (person.deloadInNumbers
       ? 'Deload week \u2014 already built into the numbers below. Do them as written.'
       : 'Deload week \u2014 cut working sets by about a third, hold RPE at 6. Keep tempos and balance work as written.') + '</div>' : '') +
@@ -466,6 +482,13 @@ setInterval(function(){
       if(m && m[1] !== BUILD) location.reload();
     }).catch(function(){});
 }, 300000);
+
+// Tick just after each second boundary, so the seconds are true for tempos and intervals.
+(function tick(){
+  var el = document.getElementById("clock");
+  if(el) el.innerHTML = clockHtml();
+  setTimeout(tick, 1010 - new Date().getMilliseconds());
+})();
 
 var lastToday = new Date().getDay();
 setInterval(function(){
