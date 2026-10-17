@@ -166,8 +166,22 @@ var SB_URL = "https://jzwtdzftxbaicdothear.supabase.co";
 var SB_KEY = "sb_publishable_0xl6KnixnFi0Z2YKU91Sqg_Nbj5_14L";
 var KEY = readKey();
 
+// Gym wall time is always Eastern, whatever time zone the device itself is set to.
+// (The Fire Stick shipped on GMT and the clock read 4 hours fast.)
+var TZ = "America/New_York";
+function nowLocal(){
+  var d = new Date();
+  try {
+    var p = {};
+    new Intl.DateTimeFormat("en-US",{timeZone:TZ,year:"numeric",month:"numeric",day:"numeric",
+      hour:"numeric",minute:"numeric",second:"numeric",hour12:false})
+      .formatToParts(d).forEach(function(x){ p[x.type] = x.value; });
+    return new Date(+p.year, +p.month-1, +p.day, (+p.hour) % 24, +p.minute, +p.second, d.getMilliseconds());
+  } catch(e) { return d; }
+}
+
 var ME = null;
-var cur = new Date().getDay();
+var cur = nowLocal().getDay();
 
 function readKey(){
   var k = new URLSearchParams(location.search).get("k") || "";
@@ -188,7 +202,7 @@ function weekInfo(person){
   if(!person.blockStart) return {n:0, deload:false};
   var p = person.blockStart.split("-");
   var a = new Date(+p[0], +p[1]-1, +p[2]);
-  var now = new Date();
+  var now = nowLocal();
   var b = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   var dow = (b.getDay() + 6) % 7;
   b.setDate(b.getDate() - dow);
@@ -205,9 +219,9 @@ function tempoCell(t){
   return '<div class="tempo">'+cells+'</div>';
 }
 
-// Wall clock from the device's own time, so the Stick has to be on local time.
+// Wall clock in Eastern time regardless of the device's own time zone.
 function clockHtml(){
-  var n = new Date(), h = n.getHours() % 12 || 12;
+  var n = nowLocal(), h = n.getHours() % 12 || 12;
   function two(x){ return (x < 10 ? "0" : "") + x; }
   return '<span class="t">'+h+'<i>:</i>'+two(n.getMinutes())+'<i>:</i><span class="s">'+two(n.getSeconds())+'</span></span>'+
     '<span class="ap">'+(n.getHours() < 12 ? "AM" : "PM")+'</span>';
@@ -218,7 +232,7 @@ function render(idx, refocus){
   if(!ME){ return; }
   var person = ME;
   var d = person.program[String(idx)] || REST_DAY;
-  var stamp = new Date().toLocaleDateString(undefined,{month:"short",day:"numeric"});
+  var stamp = nowLocal().toLocaleDateString(undefined,{month:"short",day:"numeric"});
   var wk = weekInfo(person);
 
   // The hip block is always written out in full; with pictures, a numbered
@@ -490,9 +504,9 @@ setInterval(function(){
   setTimeout(tick, 1010 - new Date().getMilliseconds());
 })();
 
-var lastToday = new Date().getDay();
+var lastToday = nowLocal().getDay();
 setInterval(function(){
-  var t = new Date().getDay();
+  var t = nowLocal().getDay();
   if(t !== lastToday){
     if(cur === lastToday) cur = t;
     lastToday = t;
@@ -503,7 +517,7 @@ setInterval(function(){
 document.addEventListener("keydown", function(e){
   if(e.key==="ArrowRight"){ cur=(cur+1)%7; render(cur); }
   else if(e.key==="ArrowLeft"){ cur=(cur+6)%7; render(cur); }
-  else if(e.key==="Home"){ cur=new Date().getDay(); render(cur); }
+  else if(e.key==="Home"){ cur=nowLocal().getDay(); render(cur); }
   else return;
   e.preventDefault();
 });
@@ -518,7 +532,7 @@ document.getElementById("stage").addEventListener("click", function(e){
     }
     if(d.dataset.d==="next") cur=(cur+1)%7;
     else if(d.dataset.d==="prev") cur=(cur+6)%7;
-    else cur=new Date().getDay();
+    else cur=nowLocal().getDay();
     render(cur, '[data-d="'+d.dataset.d+'"]');
   }
 });
