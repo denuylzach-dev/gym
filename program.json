@@ -1,0 +1,383 @@
+{
+ "_note": "Weekly program for the gym display. Overrides Supabase's program when present; delete this file to fall back to Supabase.",
+ "week_of": "2026-10-19",
+ "program": {
+  "0": {
+   "day": "Sunday",
+   "session": "Play",
+   "hip": false,
+   "cardio": {
+    "big": "Go <em>play</em>",
+    "sub": "Hamstring cleared Oct 16 — real play is back. Pickup, shoot around, cuts, layups. Keep it to pickup intensity, not a tryout."
+   },
+   "notes": [
+    "<strong>Not a makeup slot.</strong> If the week went badly, start Monday fresh.",
+    "<strong>Aches?</strong> Name the side. That's the whole log."
+   ]
+  },
+  "1": {
+   "day": "Monday",
+   "session": "Speed + lower",
+   "warm": "C",
+   "hip": true,
+   "sections": [
+    {
+     "title": "Speed — first, fresh",
+     "rows": [
+      [
+       "Accelerations, 20 yd",
+       "6 × 1",
+       "X",
+       "max",
+       "full walk-back"
+      ],
+      [
+       "Single-leg hop and stick",
+       "3 × 4/side",
+       "stick 2s",
+       "—",
+       "60s",
+       true
+      ]
+     ]
+    },
+    {
+     "title": "Strength — straight sets",
+     "rows": [
+      [
+       "Front squat",
+       "3 × 5",
+       "30X0",
+       "7",
+       "2 min"
+      ],
+      [
+       "Single-leg RDL",
+       "3 × 6/side",
+       "3010",
+       "6–7",
+       "60s",
+       true
+      ],
+      [
+       "Pallof press",
+       "2 × 10/side",
+       "2s hold",
+       "—",
+       "45s",
+       true
+      ]
+     ]
+    }
+   ],
+   "notes": [
+    "<strong>Go hard — full effort.</strong> One rule stays: stop the set the moment a rep is slower than the one before. The strain came on a last rep.",
+    "<strong>Driveway or sledmill</strong> for the accelerations. Sledmill = more calf load; either is fine.",
+    "<strong>Land the hops quietly, left first.</strong> If the knee drifts in on the landing, that rep doesn't count."
+   ]
+  },
+  "2": {
+   "day": "Tuesday",
+   "hip": false,
+   "warm": "D",
+   "notes": [
+    "<strong>Elbow test: chin hold up to 25s.</strong> Wednesday morning same or better = keep 25s. Worse = back to 20s and tell me.",
+    "<strong>Elbow rules unchanged:</strong> isometrics first, neutral grips, hangs capped at 30s, nothing fast at the elbow.",
+    "<strong>Sharp at the elbow during a hold</strong> = end that set early. Effort is fine; pain isn't."
+   ],
+   "session": "Upper + core + elbow tendon",
+   "sections": [
+    {
+     "rows": [
+      [
+       "Neutral-grip chin hold @ 90°",
+       "3 × 25s",
+       "hold",
+       "7",
+       "60s"
+      ],
+      [
+       "Overhead band triceps iso",
+       "4 × 30s",
+       "hold",
+       "7",
+       "60s"
+      ]
+     ],
+     "title": "Elbow isometrics — first, fresh · TEST"
+    },
+    {
+     "rows": [
+      [
+       "Dead hang",
+       "3 × 30s",
+       "hold",
+       "—",
+       "—"
+      ],
+      [
+       "Dead bug, banded",
+       "3 × 8/side",
+       "slow",
+       "—",
+       "—",
+       true
+      ],
+      [
+       "Landmine press",
+       "3 × 8/side",
+       "3030",
+       "6",
+       "—",
+       true
+      ],
+      [
+       "Side plank with reach-through",
+       "3 × 8/side",
+       "—",
+       "—",
+       "—",
+       true
+      ],
+      [
+       "Half-kneeling single-arm band row",
+       "3 × 10/side",
+       "3010",
+       "6",
+       "90s after round",
+       true
+      ]
+     ],
+     "title": "Circuit — three rounds",
+     "circuit": true
+    }
+   ]
+  },
+  "3": {
+   "day": "Wednesday",
+   "session": "VO2 — Norwegian 4 × 4",
+   "warm": "B",
+   "hip": false,
+   "sections": [
+    {
+     "title": "VO2 — Norwegian 4 × 4",
+     "rows": [
+      [
+       "Sledmill push @ 50 lb",
+       "4 × 4 min / 2.5 min easy",
+       "—",
+       "hard",
+       "2.5 min"
+      ]
+     ]
+    }
+   ],
+   "notes": [
+    "<strong>50 lb is the setting.</strong> Found Oct 14: 25 and 50 ran, 75 turned into a push.",
+    "<strong>Hard means 3–4 words at a time.</strong> Make round four look like round one. Rest stays 2.5 min — not a lever.",
+    "<strong>Log it:</strong> resistance, and whether the 4th interval held."
+   ]
+  },
+  "4": {
+   "day": "Thursday",
+   "session": "Knee + tendon + balance",
+   "warm": "A",
+   "hip": true,
+   "sections": [
+    {
+     "title": "Knee range + control — first, fresh",
+     "rows": [
+      [
+       "Poliquin squat, heels elevated",
+       "3 × 8",
+       "3s lower",
+       "—",
+       "60s"
+      ],
+      [
+       "Banded step-down, band pulls knee in",
+       "L 3 × 6 · R 2 × 6",
+       "5s lower",
+       "—",
+       "45s",
+       true
+      ],
+      [
+       "Tibialis raise, back to wall",
+       "3 × 15",
+       "slow",
+       "—",
+       "45s"
+      ]
+     ]
+    },
+    {
+     "title": "Tendon + balance",
+     "rows": [
+      [
+       "RDL",
+       "3 × 6",
+       "3030",
+       "6–7",
+       "90s"
+      ],
+      [
+       "Calf raise off a step, slow eccentric",
+       "3 × 8/side",
+       "5s lower",
+       "—",
+       "45s",
+       true
+      ],
+      [
+       "Copenhagen plank, short lever",
+       "2 × 25s/side",
+       "hold",
+       "6",
+       "45s",
+       true
+      ],
+      [
+       "Single-leg airplane reach",
+       "2 × 6/side",
+       "slow",
+       "—",
+       "30s",
+       true
+      ]
+     ]
+    }
+   ],
+   "notes": [
+    "<strong>Band pulls the left knee IN</strong> — resist it so the knee tracks over the little toe. Left gets 3 sets: it wobbled side to side on Oct 15.",
+    "<strong>RDL is back</strong> after five weeks. Moderate load, 3030 tempo. Usual tightness is fine; new or different, stop.",
+    "<strong>Airplane can go to parallel now.</strong> Eyes-closed stance retired — both sides hit 60s on Oct 14."
+   ]
+  },
+  "5": {
+   "day": "Friday",
+   "session": "Agility + conditioning",
+   "warm": "C",
+   "hip": true,
+   "sections": [
+    {
+     "title": "Agility — first, fresh, full rest",
+     "rows": [
+      [
+       "5-10-5, timed",
+       "5 × 1",
+       "X",
+       "max",
+       "60s"
+      ],
+      [
+       "Lateral shuffle with planted cut, 30 ft",
+       "6 × down-back",
+       "X",
+       "max",
+       "45s"
+      ],
+      [
+       "Skater bound and stick",
+       "3 × 5/side",
+       "stick 1s",
+       "—",
+       "60s",
+       true
+      ]
+     ]
+    },
+    {
+     "title": "Conditioning",
+     "rows": [
+      [
+       "17s, 30 ft",
+       "2 × 1",
+       "—",
+       "hard",
+       "3 min"
+      ]
+     ]
+    },
+    {
+     "title": "Circuit — two rounds",
+     "circuit": true,
+     "rows": [
+      [
+       "Med ball rotational throw",
+       "2 × 6/side",
+       "X",
+       "—",
+       "—",
+       true
+      ],
+      [
+       "Offset kettlebell carry",
+       "2 × 30s/side",
+       "—",
+       "6–7",
+       "90s after round",
+       true
+      ]
+     ]
+    }
+   ],
+   "notes": [
+    "<strong>Time every 5-10-5</strong> and write down the best one. It's the baseline that's been missing since August.",
+    "<strong>17s:</strong> same distance as last Friday. Log both times — the second should be within ~3s of the first.",
+    "<strong>Left first on the bounds.</strong> Knee drifts in on the landing = make the bound shorter."
+   ]
+  },
+  "6": {
+   "day": "Saturday",
+   "session": "Repeated sprints + tendon",
+   "warm": "B",
+   "hip": false,
+   "sections": [
+    {
+     "title": "Repeated sprints — first",
+     "rows": [
+      [
+       "Sledmill sprint",
+       "10 × 15s hard / 45s easy",
+       "X",
+       "9",
+       "45s walk"
+      ]
+     ]
+    },
+    {
+     "title": "Tendon holds",
+     "rows": [
+      [
+       "Isometric split squat hold",
+       "3 × 30s/side",
+       "hold",
+       "7",
+       "60s",
+       true
+      ],
+      [
+       "Spanish squat or wall sit",
+       "3 × 45s",
+       "hold",
+       "7",
+       "60s"
+      ],
+      [
+       "Static biceps hold @ 90°",
+       "3 × 30s",
+       "hold @ 90°",
+       "7",
+       "60s"
+      ]
+     ]
+    }
+   ],
+   "notes": [
+    "<strong>This is the basketball piece:</strong> short, hard, incomplete rest. Rep 10 should look like rep 1 — if it falls apart, stop at 8.",
+    "<strong>The curve loads calves and Achilles more than flat.</strong> Sore calves Sunday is normal; Achilles pain is not."
+   ]
+  }
+ }
+}

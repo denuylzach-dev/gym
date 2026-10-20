@@ -161,7 +161,7 @@
 // The program comes from get_gym_display(k), which only answers with the right
 // key. The key is never in this repo: it rides in the TV's start URL (?k=...)
 // and is remembered on the device after the first load.
-var BUILD = "2026101201";
+var BUILD = "2026102001";
 var SB_URL = "https://jzwtdzftxbaicdothear.supabase.co";
 var SB_KEY = "sb_publishable_0xl6KnixnFi0Z2YKU91Sqg_Nbj5_14L";
 var KEY = readKey();
@@ -415,7 +415,17 @@ if (window.ResizeObserver) {
   ro.observe(document.getElementById("stage"));
 }
 
+// Program override: program.json in this repo, when present, replaces the program
+// from Supabase (warm-ups, hip block and diagrams still come from Supabase).
+// Added Oct 2026 when Supabase writes from Claude stopped going through.
+function loadOverride(){
+  return fetch("program.json?v=" + Date.now(), {cache:"no-store"})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .catch(function(){ return null; });
+}
+
 function load(){
+  var ov = loadOverride();
   var auth = { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY };
   // Without a key, fall back to the old open read (empty once it's locked).
   var req = KEY
@@ -427,7 +437,9 @@ function load(){
     : fetch(SB_URL + "/rest/v1/gym_display?select=person,sort,data&order=sort", { headers: auth });
   req
   .then(function(r){ if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-  .then(function(rows){
+  .then(function(rows){ return ov.then(function(o){ return { rows: rows, o: o }; }); })
+  .then(function(x){
+    var rows = x.rows, o = x.o;
     if(!rows.length){
       if(KEY) showMessage("Key not recognised", "Check the k= value at the end of the start URL.");
       else showMessage("This screen needs its key", "Add ?k= and your key to the end of the start URL.");
@@ -443,6 +455,7 @@ function load(){
       deloadInNumbers: !!row.data.deload_in_numbers,
       diagrams: row.data.diagrams || {}
     };
+    if(o && o.program) ME.program = o.program;
     render(cur);
   })
   .catch(function(err){
